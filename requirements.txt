@@ -1,0 +1,7 @@
+tensorflow-gpu
+keras
+opencv-python
+matplotlib
+tqdm
+IPython
+pillow
