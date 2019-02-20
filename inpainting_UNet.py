@@ -7,6 +7,7 @@
 
 
 import gc
+import os
 import time
 from copy import deepcopy
 
@@ -45,11 +46,11 @@ masked_img = deepcopy(img)
 masked_img[mask==0] = 1
 
 # Show side by side
-_, axes = plt.subplots(1, 3, figsize=(20, 5))
-axes[0].imshow(img)
-axes[1].imshow(mask*255)
-axes[2].imshow(masked_img)
-plt.show()
+# _, axes = plt.subplots(1, 3, figsize=(20, 5))
+# axes[0].imshow(img)
+# axes[1].imshow(mask*255)
+# axes[2].imshow(masked_img)
+# plt.show()
 
 
 # ## Creating data generator
@@ -61,7 +62,7 @@ plt.show()
 class DataGenerator(ImageDataGenerator):
     def flow(self, x, *args, **kwargs):
         while True:
-            
+
             # Get augmentend image samples
             ori = next(super().flow(x, *args, **kwargs))
 
@@ -75,10 +76,10 @@ class DataGenerator(ImageDataGenerator):
             # Yield ([ori, masl],  ori) training batches
             # print(masked.shape, ori.shape)
             gc.collect()
-            yield [masked, mask], ori        
+            yield [masked, mask], ori
 
 # Create datagen
-datagen = DataGenerator(  
+datagen = DataGenerator(
     rotation_range=20,
     width_shift_range=0.2,
     height_shift_range=0.2,
@@ -93,10 +94,10 @@ generator = datagen.flow(x=batch, batch_size=4)
 (masked, mask), ori = next(generator)
 
 # Show side by side
-_, axes = plt.subplots(1, 3, figsize=(20, 5))
-axes[0].imshow(masked[0,:,:,:])
-axes[1].imshow(mask[0,:,:,:]*255)
-axes[2].imshow(ori[0,:,:,:])
+# _, axes = plt.subplots(1, 3, figsize=(20, 5))
+# axes[0].imshow(masked[0,:,:,:])
+# axes[1].imshow(mask[0,:,:,:]*255)
+# axes[2].imshow(ori[0,:,:,:])
 
 
 # ## Training classifier on single image
@@ -105,26 +106,32 @@ axes[2].imshow(ori[0,:,:,:])
 def plot_callback(model):
     """Called at the end of each epoch, displaying our previous test images,
     as well as their masked predictions and saving them to disk"""
-    
-    # Get samples & Display them        
+
+    # Get samples & Display them
     pred_img = model.predict([masked, mask])
-    imsave('pred_img.png', pred_img[0,:,:,:])
 
     # Clear current output and display test images
     for i in range(len(ori)):
-        _, axes = plt.subplots(1, 3, figsize=(20, 5))
-        axes[0].imshow(masked[i,:,:,:])
-        axes[1].imshow(pred_img[i,:,:,:] * 1.)
-        axes[2].imshow(ori[i,:,:,:])
-        axes[0].set_title('Masked Image')
-        axes[1].set_title('Predicted Image')
-        axes[2].set_title('Original Image')                
-        plt.show()
+        # _, axes = plt.subplots(1, 3, figsize=(20, 5))
+        # axes[0].imshow(masked[i,:,:,:])
+        # axes[1].imshow(pred_img[i,:,:,:] * 1.)
+        # axes[2].imshow(ori[i,:,:,:])
+        # axes[0].set_title('Masked Image')
+        # axes[1].set_title('Predicted Image')
+        # axes[2].set_title('Original Image')
+        # plt.show()
+        imsave('result/{}_orginal.png'.format(i), ori[i,:,:,:])
+        imsave('result/{}_masked.png'.format(i), masked[i,:,:,:])
+        imsave('result/{}_pred.png'.format(i), pred_img[i,:,:,:])
 
 
-model = PConvUnet(weight_filepath='data/logs/')
+if not os.path.exists('result/logs'):
+    os.mkdir('result/logs')
+
+
+model = PConvUnet(weight_filepath='result/logs/')
 model.fit(
-    generator, 
+    generator,
     steps_per_epoch=1000,
     epochs=1,
     plot_callback=plot_callback,
