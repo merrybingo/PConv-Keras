@@ -1,7 +1,8 @@
 from random import randint
-import itertools
-import numpy as np
+
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def random_mask(height, width, channels=3):
@@ -35,3 +36,13 @@ def random_mask(height, width, channels=3):
         cv2.ellipse(img, (x1,y1), (s1,s2), a1, a2, a3,(1,1,1), thickness)
     
     return 1-img
+
+
+def plot_images(images, s=5):
+    _, axes = plt.subplots(1, len(images), figsize=(s*len(images), s))
+    if len(images) == 1:
+        axes = [axes]
+    for img, ax in zip(images, axes):
+        ax.imshow(img)
+    plt.show()
+
