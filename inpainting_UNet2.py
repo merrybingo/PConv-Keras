@@ -40,7 +40,6 @@ masked_img[mask==0] = 1
 class DataGenerator(ImageDataGenerator):
     def flow(self, x, *args, **kwargs):
         while True:
-
             # Get augmentend image samples
             ori = next(super().flow(x, *args, **kwargs))
 
@@ -83,14 +82,6 @@ def plot_callback(model):
 
     # Clear current output and display test images
     for i in range(len(ori)):
-        # _, axes = plt.subplots(1, 3, figsize=(20, 5))
-        # axes[0].imshow(masked[i,:,:,:])
-        # axes[1].imshow(pred_img[i,:,:,:] * 1.)
-        # axes[2].imshow(ori[i,:,:,:])
-        # axes[0].set_title('Masked Image')
-        # axes[1].set_title('Predicted Image')
-        # axes[2].set_title('Original Image')
-        # plt.show()
         imsave('result/{}_orginal.png'.format(i), ori[i,:,:,:])
         imsave('result/{}_masked.png'.format(i), masked[i,:,:,:])
         imsave('result/{}_pred.png'.format(i), pred_img[i,:,:,:])
@@ -102,7 +93,7 @@ if not os.path.exists('result/logs'):
 model = PConvUnet(weight_filepath='result/logs/')
 model.fit(
     generator,
-    steps_per_epoch=1,
+    steps_per_epoch=1000,
     epochs=1,
     plot_callback=plot_callback,
 )
