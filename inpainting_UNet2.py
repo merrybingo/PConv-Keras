@@ -22,9 +22,9 @@ PConvUnet().summary()
 
 # # Testing out on single image
 # Load image
-org = cv2.imread('./data/building.jpg')
-org = cv2.cvtColor(org, cv2.COLOR_BGR2RGB)
-img = cv2.resize(org, (512, 512)) / 255
+img = cv2.imread('./data/building.jpg')
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+img = cv2.resize(img, (512, 512)) / 255
 shape = img.shape
 print(f"Shape of image is: {shape}")
 
@@ -98,23 +98,26 @@ model.fit(
     plot_callback=plot_callback,
 )
 
+# Load image
+org = cv2.imread('./data/building.jpg')
+org = cv2.cvtColor(org, cv2.COLOR_BGR2RGB)
 org = org / 255
 shape = org.shape
+print(f"Shape of image is: {shape}")
 
 # Load mask
-mask2 = random_mask(shape[0], shape[1])
+org_mask = random_mask(shape[0], shape[1])
 
 # Image + mask
-masked_img2 = deepcopy(org)
-masked_img2[mask2==0] = 1
+masked_org = deepcopy(org)
+masked_org[org_mask==0] = 1
 
 # Run prediction quickly
-pred = model.scan_predict((org, mask2))
+pred = model.scan_predict((org, org_mask))
 
 # Show result
-# plot_images([org, masked_img2, pred])
 imsave('result/original.png', org)
-imsave('result/masked.png', masked_img2)
+imsave('result/masked.png', masked_org)
 imsave('result/predict.png', pred)
 
 e = int(time.time() - start_time)
