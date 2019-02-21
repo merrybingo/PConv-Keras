@@ -25,7 +25,7 @@ mask = random_mask(shape[0], shape[1])
 masked_img = deepcopy(img)
 masked_img[mask==0] = 1
 
-model = PConvUnet(weight_filepath='result/logs2/')
+model = PConvUnet(weight_filepath='result/logs/')
 model.load(r"result\logs\1_weights_2019-02-21-04-59-53.h5", train_bn=False)
 
 # Run prediction quickly

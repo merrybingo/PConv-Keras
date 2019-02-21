@@ -1,18 +1,12 @@
 
 # coding: utf-8
 
-# # Implementing the U-Net Architecture
-# The paper uses a U-Net architecture for doing the image inpainting.
-# We've implemented this in `libs/unet.py` module, and we will review it here.
-
-
 import gc
 import os
 import time
 from copy import deepcopy
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 from skimage.io import imsave
@@ -28,9 +22,9 @@ PConvUnet().summary()
 
 # # Testing out on single image
 # Load image
-img = cv2.imread('./data/building.jpg')
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-img = cv2.resize(img, (512, 512)) / 255
+org = cv2.imread('./data/building.jpg')
+org = cv2.cvtColor(org, cv2.COLOR_BGR2RGB)
+img = cv2.resize(org, (512, 512)) / 255
 shape = img.shape
 print(f"Shape of image is: {shape}")
 
@@ -41,20 +35,8 @@ mask = random_mask(shape[0], shape[1])
 masked_img = deepcopy(img)
 masked_img[mask==0] = 1
 
-# Show side by side
-# _, axes = plt.subplots(1, 3, figsize=(20, 5))
-# axes[0].imshow(img)
-# axes[1].imshow(mask*255)
-# axes[2].imshow(masked_img)
-# plt.show()
-
 
 # ## Creating data generator
-# In this simple testing case we'll only be testing the architecture on a single image to see how it performs.
-# We create a generator that will infinitely yield the same image and masked_image for us.
-# The generator is based off the ImageDataGenerator from keras.processing, which allows us to do all kinds of autmentation more easily.
-
-
 class DataGenerator(ImageDataGenerator):
     def flow(self, x, *args, **kwargs):
         while True:
@@ -90,12 +72,6 @@ generator = datagen.flow(x=batch, batch_size=4)
 # Get samples & Display them
 (masked, mask), ori = next(generator)
 
-# Show side by side
-_, axes = plt.subplots(1, 3, figsize=(20, 5))
-axes[0].imshow(masked[0,:,:,:])
-axes[1].imshow(mask[0,:,:,:]*255)
-axes[2].imshow(ori[0,:,:,:])
-
 
 # ## Training classifier on single image
 def plot_callback(model):
@@ -126,10 +102,29 @@ if not os.path.exists('result/logs'):
 model = PConvUnet(weight_filepath='result/logs/')
 model.fit(
     generator,
-    steps_per_epoch=1000,
+    steps_per_epoch=1,
     epochs=1,
     plot_callback=plot_callback,
 )
+
+org = org / 255
+shape = org.shape
+
+# Load mask
+mask2 = random_mask(shape[0], shape[1])
+
+# Image + mask
+masked_img2 = deepcopy(org)
+masked_img2[mask2==0] = 1
+
+# Run prediction quickly
+pred = model.scan_predict((org, mask2))
+
+# Show result
+# plot_images([org, masked_img2, pred])
+imsave('result/original.png', org)
+imsave('result/masked.png', masked_img2)
+imsave('result/predict.png', pred)
 
 e = int(time.time() - start_time)
 print('{:02d}:{:02d}:{:02d}'.format(e // 3600, (e % 3600 // 60), e % 60))
