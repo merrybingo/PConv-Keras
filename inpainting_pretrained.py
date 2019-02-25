@@ -6,6 +6,7 @@
 from copy import deepcopy
 
 import cv2
+from skimage.io import imsave
 
 # Import modules from libs/ directory
 from libs.pconv_model import PConvUnet
@@ -33,5 +34,8 @@ pred = model.scan_predict((img, mask))
 
 # Show result
 plot_images([img, masked_img, pred])
+imsave('result/test_orginal.png', img)
+imsave('result/test_masked.png', masked_img)
+imsave('result/test_pred.png', pred)
 
 print("finish")
